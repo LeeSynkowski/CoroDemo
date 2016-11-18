@@ -185,3 +185,4 @@ local buttonRead = widget.newButton{label="READ",x = display.contentWidth  - 30,
 
 onFirstView()	-- invoke first tab button's onPress event manually
 
+-- test change
