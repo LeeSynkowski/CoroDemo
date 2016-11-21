@@ -14,10 +14,12 @@ local composer = require "composer"
 
 -- event listeners for tab buttons:
 local function onFirstView( event )
+    print('First View button press')
 	composer.gotoScene( "view1" )
 end
 
 local function onSecondView( event )
+    print('Second View button press')
 	composer.gotoScene( "view2" )
 end
 
@@ -57,7 +59,7 @@ local tabBar = widget.newTabBar{
 --
 -------------------------------------------------------
 
-
+--[[
 display.setDefault( "background", 244/255,223/255,151/255 )
 local barCodeText
 local newStepper
@@ -177,7 +179,7 @@ currentValue.x = newStepper.x - 30
 -- button "READ"
 local buttonRead = widget.newButton{label="READ",x = display.contentWidth  - 30, y = horizontalSlider.y, onRelease=buttonReadHandler}
 
-
+]]
 
 
 

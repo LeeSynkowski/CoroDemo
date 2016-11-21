@@ -8,6 +8,7 @@ local composer = require( "composer" )
 local scene = composer.newScene()
 
 function scene:create( event )
+    print ('view 1  - create')
 	local sceneGroup = self.view
 	
 	-- Called when the scene's view does not exist.
@@ -40,6 +41,7 @@ function scene:create( event )
 end
 
 function scene:show( event )
+    print ('view 1  - show')
 	local sceneGroup = self.view
 	local phase = event.phase
 	
@@ -54,6 +56,7 @@ function scene:show( event )
 end
 
 function scene:hide( event )
+    print ('view 1  - hide')
 	local sceneGroup = self.view
 	local phase = event.phase
 	
@@ -68,6 +71,7 @@ function scene:hide( event )
 end
 
 function scene:destroy( event )
+    print ('view 1  - destroy')
 	local sceneGroup = self.view
 	
 	-- Called prior to the removal of scene's "view" (sceneGroup)

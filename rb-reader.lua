@@ -34,8 +34,10 @@ local rb = {}
 rb.numOfReads = 10  
 rb.cameraShape = nil -- will store the display object that we will use to show the camera
 rb.readerLine = nil
+rb.parentScene = nil
 
 local readingInProgress = false
+local initialLine
 
 ------------------------
 -- Private Functions
@@ -66,7 +68,7 @@ local function showReader(params)
         cameraShapeH = t    
         shapeRotation = -90
     end    
-    cameraShape = display.newRect(params.x, params.y, cameraShapeW, cameraShapeH )
+    cameraShape = display.newRect(rb.parentScene,params.x, params.y, cameraShapeW, cameraShapeH )
     cameraShape.anchorX = 0.5
     cameraShape.fill = params.fill
     cameraShape.rotation = shapeRotation
@@ -85,15 +87,29 @@ local function showReader(params)
   
 
     local readerWidth = cameraShape.contentWidth * 0.9
+    --*************88
+    print ('readerWidth upon creation')
+    print(readerWidth)
+    --*****************
+    --[[
     local readerLine = display.newLine(0,0,readerWidth,0)
+    readerLine = display.newLine(0,0,readerWidth,0)
     readerLine:setStrokeColor(1,0,0)
     readerLine.x,readerLine.y = cameraShape.x - readerWidth*0.5, cameraShape.y
     rb.readerLine = readerLine
+    ]]
+    
+    rb.readerLine = display.newLine(rb.parentScene,0,0,readerWidth,0)
+    rb.readerLine:setStrokeColor(1,0,0)
+    rb.readerLine.x,rb.readerLine.y = cameraShape.x - readerWidth*0.5, cameraShape.y
+    
+
+
 end
 
 local function updateLineWidth(newWidth)
     local formerLine = rb.readerLine
-    local newGuideLine = display.newLine(0,0,newWidth,0)
+    local newGuideLine = display.newLine(rb.parentScene,0,0,newWidth,0)
     newGuideLine.x,newGuideLine.y = rb.cameraShape.x - newWidth*0.5, rb.cameraShape.y
     newGuideLine:setStrokeColor(1,0,0)
     display.remove(formerLine)
@@ -547,7 +563,7 @@ end
 -- Public Functions
 
 -- shows the bar code reader on screen. The bar code reader is a guide line and a rect using Camera as texture and 
-rb.show = function(params)
+rb.show = function(params,parentScene)
     
     -- possible params and their default values
     params = params or {}
@@ -556,9 +572,13 @@ rb.show = function(params)
     params.width = params.cameraWidth or display.contentWidth * 0.94
     params.height = params.cameraHeight or display.contentHeight * 0.5 
     params.fill = params.fill or {type = "camera"}
-        
+      
+    rb.parentScene = parentScene
+    
     -- showing reader on screen
     showReader(params)
+    
+
 end
 
 -- function that reades the bar code 
