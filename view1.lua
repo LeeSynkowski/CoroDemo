@@ -14,6 +14,7 @@ local function handleResponse( event )
     if not event.isError then
         local response = json.decode( event.response )
         print( event.response )
+    end
     else
         print( "Error" )
     end
@@ -26,6 +27,24 @@ local function buttonLookupHandler()
     print( "Handled button press" )
     network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno=01009&type=b&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1", "GET", handleResponse )
     
+end
+
+local function onRowRender( event )
+
+    -- Get reference to the row group
+    local row = event.row
+
+    -- Cache the row "contentWidth" and "contentHeight" because the row bounds can change as children objects are added
+    local rowHeight = row.contentHeight
+    local rowWidth = row.contentWidth
+
+    local rowTitle = display.newText( row, "Row " .. row.index, 0, 0, nil, 14 )
+    rowTitle:setFillColor( 0 )
+
+    -- Align the label left and vertically centered
+    rowTitle.anchorX = 0
+    rowTitle.x = 0
+    rowTitle.y = rowHeight * 0.5
 end
 
 function scene:create( event )
@@ -42,7 +61,7 @@ function scene:create( event )
 	background:setFillColor( 1 )	-- white
 	
 	-- create some text
-	local title = display.newText( "First View", display.contentCenterX, 125, native.systemFont, 32 )
+	local title = display.newText( "First View", display.contentCenterX, 25, native.systemFont, 32 )
 	title:setFillColor( 0 )	-- black
 	
     --[[	local newTextParams = { text = "Loaded by the first tab's\n\"onPress\" listener\nspecified in the 'tabButtons' table", 
@@ -56,13 +75,25 @@ function scene:create( event )
     ]]
     
     
-	local buttonLookup = widget.newButton{label="Look Up",x = display.contentCenterX + 10, y = title.y + 215, onRelease=buttonLookupHandler}
+    local displayTable = widget.newTableView{
+        left = 20,
+        top = 40,
+        height = 300,
+        width = 280,
+        onRowRender = onRowRender,
+        --onRowTouch = onRowTouch,
+        --listener = scrollListener
+    }
     
+
+    
+    local buttonLookup = widget.newButton{label="Look Up",x = display.contentCenterX + 10, y = title.y + 350, onRelease=buttonLookupHandler}
     
 	-- all objects must be added to group (e.g. self.view)
 	sceneGroup:insert( background )
 	sceneGroup:insert( title )
 	sceneGroup:insert( buttonLookup )
+    sceneGroup:insert( displayTable )
 end
 
 function scene:show( event )
