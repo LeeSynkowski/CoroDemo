@@ -6,6 +6,27 @@
 
 local composer = require( "composer" )
 local scene = composer.newScene()
+local json = require( "json" )
+local widget = require "widget"
+
+local function handleResponse( event )
+    print( "Making web request" )
+    if not event.isError then
+        local response = json.decode( event.response )
+        print( event.response )
+    else
+        print( "Error" )
+    end
+    return
+end
+ 
+
+ 
+local function buttonLookupHandler()
+    print( "Handled button press" )
+    network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno=01009&type=b&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1", "GET", handleResponse )
+    
+end
 
 function scene:create( event )
     print ('view 1  - create')
@@ -24,7 +45,7 @@ function scene:create( event )
 	local title = display.newText( "First View", display.contentCenterX, 125, native.systemFont, 32 )
 	title:setFillColor( 0 )	-- black
 	
-	local newTextParams = { text = "Loaded by the first tab's\n\"onPress\" listener\nspecified in the 'tabButtons' table", 
+    --[[	local newTextParams = { text = "Loaded by the first tab's\n\"onPress\" listener\nspecified in the 'tabButtons' table", 
 						x = display.contentCenterX + 10, 
 						y = title.y + 215, 
 						width = 310, height = 310, 
@@ -32,12 +53,16 @@ function scene:create( event )
 						align = "center" }
 	local summary = display.newText( newTextParams )
 	summary:setFillColor( 0 ) -- black
-
-	
+    ]]
+    
+    
+	local buttonLookup = widget.newButton{label="Look Up",x = display.contentCenterX + 10, y = title.y + 215, onRelease=buttonLookupHandler}
+    
+    
 	-- all objects must be added to group (e.g. self.view)
 	sceneGroup:insert( background )
 	sceneGroup:insert( title )
-	sceneGroup:insert( summary )
+	sceneGroup:insert( buttonLookup )
 end
 
 function scene:show( event )
