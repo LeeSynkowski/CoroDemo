@@ -55,6 +55,14 @@ local function onRowRender( event )
     row:insert(rowTitle)
 end
 
+local function onRowTouch ( event )
+    if  event.phase == "press" then
+        print ( "Row ndbno:")
+        local ndbno = event.row.params.ndbno 
+        network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno="..ndbno.."&type=b&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1","GET", handleResponse )
+    end
+end
+
 
 local displayTable = widget.newTableView{
     left = 20,
@@ -80,7 +88,8 @@ local function handleResponse( event )
             print(v.name)
             displayTable:insertRow {
                 params = {
-                    rowTitle = v.name
+                    rowTitle = v.name,
+                    ndbno = v.ndbno
                 }
             }
         end
