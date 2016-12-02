@@ -7,30 +7,35 @@
 local composer = require( "composer" )
 local scene = composer.newScene()
 local json = require( "json" )
-local widget = require "widget"
+local widget = require ("widget")
+local utils = require ("utils")
 
-local function handleResponse( event )
-    print( "Making web request" )
-    if not event.isError then
-        local response = json.decode( event.response )
-        print( event.response )
-    end
-    else
-        print( "Error" )
-    end
-    return
-end
- 
+--store text to this field
+local lookUpText
 
- 
-local function buttonLookupHandler()
-    print( "Handled button press" )
-    network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno=01009&type=b&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1", "GET", handleResponse )
-    
+local lookUpBox
+
+local itemList
+
+local function textListener( event )
+
+    if ( event.phase == "began" ) then
+        -- User begins editing "defaultField"
+
+    elseif ( event.phase == "ended" or event.phase == "submitted" ) then
+        lookUpText = event.target.text
+
+    elseif ( event.phase == "editing" ) then
+        lookUpText = event.text
+    end
 end
+
+-- Create text field
+lookUpBox = native.newTextField( display.contentCenterX, 60, 280, 30 )
+lookUpBox:addEventListener( "userInput", textListener )
 
 local function onRowRender( event )
-
+    print('--------------------called row render')
     -- Get reference to the row group
     local row = event.row
 
@@ -38,13 +43,66 @@ local function onRowRender( event )
     local rowHeight = row.contentHeight
     local rowWidth = row.contentWidth
 
-    local rowTitle = display.newText( row, "Row " .. row.index, 0, 0, nil, 14 )
+    local message = event.row.params.rowTitle
+    
+    local rowTitle = display.newText( row, message , 0, 0, nil, 14 )
     rowTitle:setFillColor( 0 )
 
     -- Align the label left and vertically centered
     rowTitle.anchorX = 0
     rowTitle.x = 0
-    rowTitle.y = rowHeight * 0.5
+    rowTitle.y = rowHeight * 0.5   
+    row:insert(rowTitle)
+end
+
+
+local displayTable = widget.newTableView{
+    left = 20,
+    top = 70,
+    height = 270,
+    width = 280,
+    onRowRender = onRowRender,
+    onRowTouch = onRowTouch,
+    listener = scrollListener
+}
+
+local function handleResponse( event )
+    print( "Making web request" )
+    if not event.isError then
+        local response = json.decode( event.response )
+        print ("Response")
+        utils.print_r (response)
+        
+        itemList = response.list.item
+        
+        for k, v in pairs(itemList) do
+            local rowText = {v.name} 
+            print(v.name)
+            displayTable:insertRow {
+                params = {
+                    rowTitle = v.name
+                }
+            }
+        end
+
+    else
+        print( "Error" )
+    end
+    return
+end
+
+local function buttonLookupHandler()
+    print( "Handled button press" )
+    print(" Look up text ")
+    print( lookUpText )
+    --food type by number
+    --network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno=01009&type=b&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1",
+    --food list
+    --network.request( "http://api.nal.usda.gov/ndb/list?format=json&lt=f&sort=n&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1", 
+    --query by name
+    network.request( "http://api.nal.usda.gov/ndb/search/?format=json&q="..lookUpText.."&sort=n&max=25&offset=0&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1",  
+    "GET", handleResponse )
+
 end
 
 function scene:create( event )
@@ -61,32 +119,9 @@ function scene:create( event )
 	background:setFillColor( 1 )	-- white
 	
 	-- create some text
-	local title = display.newText( "First View", display.contentCenterX, 25, native.systemFont, 32 )
+	local title = display.newText( "Find a Food...", display.contentCenterX, 20, native.systemFont, 24 )
 	title:setFillColor( 0 )	-- black
 	
-    --[[	local newTextParams = { text = "Loaded by the first tab's\n\"onPress\" listener\nspecified in the 'tabButtons' table", 
-						x = display.contentCenterX + 10, 
-						y = title.y + 215, 
-						width = 310, height = 310, 
-						font = native.systemFont, fontSize = 14, 
-						align = "center" }
-	local summary = display.newText( newTextParams )
-	summary:setFillColor( 0 ) -- black
-    ]]
-    
-    
-    local displayTable = widget.newTableView{
-        left = 20,
-        top = 40,
-        height = 300,
-        width = 280,
-        onRowRender = onRowRender,
-        --onRowTouch = onRowTouch,
-        --listener = scrollListener
-    }
-    
-
-    
     local buttonLookup = widget.newButton{label="Look Up",x = display.contentCenterX + 10, y = title.y + 350, onRelease=buttonLookupHandler}
     
 	-- all objects must be added to group (e.g. self.view)
@@ -94,6 +129,8 @@ function scene:create( event )
 	sceneGroup:insert( title )
 	sceneGroup:insert( buttonLookup )
     sceneGroup:insert( displayTable )
+    
+
 end
 
 function scene:show( event )
