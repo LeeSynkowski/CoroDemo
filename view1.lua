@@ -10,10 +10,9 @@ local json = require( "json" )
 local widget = require ("widget")
 local utils = require ("utils")
 
+
 --store text to this field
 local lookUpText
-
-local lookUpBox
 
 local itemList
 
@@ -31,7 +30,7 @@ local function textListener( event )
 end
 
 -- Create text field
-lookUpBox = native.newTextField( display.contentCenterX, 60, 280, 30 )
+local lookUpBox = native.newTextField( display.contentCenterX, 60, 280, 30 )
 lookUpBox:addEventListener( "userInput", textListener )
 
 local function onRowRender( event )
@@ -55,11 +54,23 @@ local function onRowRender( event )
     row:insert(rowTitle)
 end
 
+local function handleDetailLookUp( event )
+    local response = {}
+    
+    if not event.isError then
+        response = json.decode( event.response )
+        utils.print_r (response)
+    end
+    
+    composer.gotoScene( "view3" ,  response)
+end
+
 local function onRowTouch ( event )
     if  event.phase == "press" then
         print ( "Row ndbno:")
         local ndbno = event.row.params.ndbno 
-        network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno="..ndbno.."&type=b&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1","GET", handleResponse )
+        print (ndbno)
+        network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno="..ndbno.."&type=b&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1","GET", handleDetailLookUp )
     end
 end
 
@@ -133,11 +144,14 @@ function scene:create( event )
 	
     local buttonLookup = widget.newButton{label="Look Up",x = display.contentCenterX + 10, y = title.y + 350, onRelease=buttonLookupHandler}
     
+
+    
 	-- all objects must be added to group (e.g. self.view)
 	sceneGroup:insert( background )
 	sceneGroup:insert( title )
 	sceneGroup:insert( buttonLookup )
     sceneGroup:insert( displayTable )
+    sceneGroup:insert( lookUpBox )
     
 
 end
@@ -146,10 +160,16 @@ function scene:show( event )
     print ('view 1  - show')
 	local sceneGroup = self.view
 	local phase = event.phase
-	
+	print ( "phase" )
+    print ( phase )
+    
 	if phase == "will" then
 		-- Called when the scene is still off screen and is about to move on screen
 	elseif phase == "did" then
+        if lookUpBox == nil then
+            lookUpBox = native.newTextField( display.contentCenterX, 60, 280, 30 )
+            lookUpBox:addEventListener( "userInput", textListener )
+        end
 		-- Called when the scene is now on screen
 		-- 
 		-- INSERT code here to make the scene come alive
@@ -159,9 +179,12 @@ end
 
 function scene:hide( event )
     print ('view 1  - hide')
+    
 	local sceneGroup = self.view
 	local phase = event.phase
 	
+    
+    
 	if event.phase == "will" then
 		-- Called when the scene is on screen and is about to move off screen
 		--
@@ -169,6 +192,9 @@ function scene:hide( event )
 		-- e.g. stop timers, stop animation, unload sounds, etc.)
 	elseif phase == "did" then
 		-- Called when the scene is now off screen
+        display.remove(lookUpBox)
+        lookUpBox = nil
+
 	end
 end
 
