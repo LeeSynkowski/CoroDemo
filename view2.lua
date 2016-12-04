@@ -12,7 +12,7 @@ local barCodeText
 
 local scene = composer.newScene()
 
-display.setDefault( "background", 244/255,223/255,151/255 )
+display.setDefault( "background", 213/255,213/255,213/255 )
 
 local newStepper
 

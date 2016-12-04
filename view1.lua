@@ -55,14 +55,15 @@ local function onRowRender( event )
 end
 
 local function handleDetailLookUp( event )
-    local response = {}
+    local options = {}
     
     if not event.isError then
-        response = json.decode( event.response )
-        utils.print_r (response)
+        local response = json.decode( event.response )
+        options.params = {}
+        options.params.response = response
     end
     
-    composer.gotoScene( "view3" ,  response)
+    composer.gotoScene( "view3" , options)
 end
 
 local function onRowTouch ( event )
@@ -70,7 +71,7 @@ local function onRowTouch ( event )
         print ( "Row ndbno:")
         local ndbno = event.row.params.ndbno 
         print (ndbno)
-        network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno="..ndbno.."&type=b&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1","GET", handleDetailLookUp )
+        network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno="..ndbno.."&type=f&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1","GET", handleDetailLookUp )
     end
 end
 
@@ -120,9 +121,11 @@ local function buttonLookupHandler()
     --food list
     --network.request( "http://api.nal.usda.gov/ndb/list?format=json&lt=f&sort=n&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1", 
     --query by name
-    network.request( "http://api.nal.usda.gov/ndb/search/?format=json&q="..lookUpText.."&sort=n&max=25&offset=0&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1",  
-    "GET", handleResponse )
-
+    if lookUpText ~= nil then
+        network.request( "http://api.nal.usda.gov/ndb/search/?format=json&q="..lookUpText.."&sort=n&max=25&offset=0&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1",  
+        "GET", handleResponse )
+    end
+    
 end
 
 function scene:create( event )
@@ -136,7 +139,7 @@ function scene:create( event )
 	
 	-- create a white background to fill screen
 	local background = display.newRect( display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight )
-	background:setFillColor( 1 )	-- white
+	background:setFillColor( 213/255,213/255,213/255 )	-- white
 	
 	-- create some text
 	local title = display.newText( "Find a Food...", display.contentCenterX, 20, native.systemFont, 24 )

@@ -4,12 +4,47 @@ local json = require( "json" )
 local widget = require ("widget")
 local utils = require ("utils")
 
+local function onRowRender( event )
+    print('--------------------called row render')
+    -- Get reference to the row group
+    local row = event.row
+
+    -- Cache the row "contentWidth" and "contentHeight" because the row bounds can change as children objects are added
+    local rowHeight = row.contentHeight
+    local rowWidth = row.contentWidth
+
+    local message = event.row.params.rowTitle
+    
+    local rowTitle = display.newText( row, message , 0, 0, nil, 14 )
+    rowTitle:setFillColor( 0 )
+
+    -- Align the label left and vertically centered
+    rowTitle.anchorX = 0
+    rowTitle.x = 0
+    rowTitle.y = rowHeight * 0.5   
+    row:insert(rowTitle)
+end
+
+local function onRowTouch ( event )
+
+end
+
+
+local displayTable = widget.newTableView{
+    left = 20,
+    top = 70,
+    height = 270,
+    width = 280,
+    onRowRender = onRowRender,
+    onRowTouch = onRowTouch,
+    listener = scrollListener
+}
+
 function scene:create( event )
     print ('view 3  - create')
 	local sceneGroup = self.view
 	
-    
-    utils.print_r (event.params)
+    --utils.print_r (event.params.response.report.food.nutrients)
 	-- Called when the scene's view does not exist.
 	-- 
 	-- INSERT code here to initialize the scene
@@ -17,22 +52,36 @@ function scene:create( event )
 	
 	-- create a white background to fill screen
 	local background = display.newRect( display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight )
-	background:setFillColor( 1,0,0 )	-- red
+	background:setFillColor( 213/255,213/255,213/255 )	-- red
 	
 	-- create some text
-	local title = display.newText( "View 3...", display.contentCenterX, 20, native.systemFont, 24 )
+	local title = display.newText( "Nutrient Info", display.contentCenterX, 20, native.systemFont, 24 )
 	title:setFillColor( 0 )	-- black
 	
-    
 	-- all objects must be added to group (e.g. self.view)
 	sceneGroup:insert( background )
     sceneGroup:insert( title )
+    sceneGroup:insert( displayTable )
     
+    itemList = event.params.response.report.food.nutrients
+    
+    utils.print_r ( itemList )
+    for k, v in pairs(itemList) do
+        displayTable:insertRow {
+            params = {
+                rowTitle = v.name..': '..v.value..' '..v.unit,
+            }
+        }
+    end
 
+    
 end
 
 function scene:show( event )
     print ('view 3  - show')
+    
+    --utils.print_r (event.params.response.report.food.nutrients)
+    
 	local sceneGroup = self.view
 	local phase = event.phase
 	print ( "phase" )
