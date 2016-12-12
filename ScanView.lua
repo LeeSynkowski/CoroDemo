@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------------------
 --
--- view2.lua
+-- ScanView.lua
 --
 -----------------------------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ function scene:create( event )
 end
 
 function scene:show( event )
-    print ('view 2  - show')
+    print ('ScanView  - show')
 	local sceneGroup = self.view
 	local phase = event.phase
 	
@@ -117,7 +117,7 @@ function scene:show( event )
 end
 
 function scene:hide( event )
-    print ('view 2  - hide')
+    print ('ScanView   - hide')
 	local sceneGroup = self.view
 	local phase = event.phase
 	
@@ -132,23 +132,18 @@ function scene:hide( event )
 end
 
 function scene:destroy( event )
-    print ('view 2  - destroy')
+    print ('ScanView   - destroy')
 	local sceneGroup = self.view
-	
 	-- Called prior to the removal of scene's "view" (sceneGroup)
 	-- 
 	-- INSERT code here to cleanup the scene
 	-- e.g. remove display objects, remove touch listeners, save state, etc.
 end
 
----------------------------------------------------------------------------------
-
 -- Listener setup
 scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
-
------------------------------------------------------------------------------------------
 
 return scene

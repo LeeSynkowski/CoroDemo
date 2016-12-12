@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------------------
 --
--- view1.lua
+-- LookUpView.lua
 --
 -----------------------------------------------------------------------------------------
 
@@ -34,7 +34,6 @@ local lookUpBox = native.newTextField( display.contentCenterX, 60, 280, 30 )
 lookUpBox:addEventListener( "userInput", textListener )
 
 local function onRowRender( event )
-    print('--------------------called row render')
     -- Get reference to the row group
     local row = event.row
 
@@ -63,7 +62,7 @@ local function handleDetailLookUp( event )
         options.params.response = response
     end
     
-    composer.gotoScene( "view3" , options)
+    composer.gotoScene( "FoodDataView" , options)
 end
 
 local function onRowTouch ( event )
@@ -129,7 +128,7 @@ local function buttonLookupHandler()
 end
 
 function scene:create( event )
-    print ('view 1  - create')
+    print ('LookUpView  - create')
 	local sceneGroup = self.view
 	
 	-- Called when the scene's view does not exist.
@@ -146,21 +145,18 @@ function scene:create( event )
 	title:setFillColor( 0 )	-- black
 	
     local buttonLookup = widget.newButton{label="Look Up",x = display.contentCenterX + 10, y = title.y + 350, onRelease=buttonLookupHandler}
-    
 
-    
 	-- all objects must be added to group (e.g. self.view)
 	sceneGroup:insert( background )
 	sceneGroup:insert( title )
 	sceneGroup:insert( buttonLookup )
     sceneGroup:insert( displayTable )
-    sceneGroup:insert( lookUpBox )
-    
+    sceneGroup:insert( lookUpBox )   
 
 end
 
 function scene:show( event )
-    print ('view 1  - show')
+    print ('LookUpView  - show')
 	local sceneGroup = self.view
 	local phase = event.phase
 	print ( "phase" )
@@ -181,7 +177,7 @@ function scene:show( event )
 end
 
 function scene:hide( event )
-    print ('view 1  - hide')
+    print ('LookUpView  - hide')
     
 	local sceneGroup = self.view
 	local phase = event.phase
@@ -202,7 +198,7 @@ function scene:hide( event )
 end
 
 function scene:destroy( event )
-    print ('view 1  - destroy')
+    print ('LookUpView  - destroy')
 	local sceneGroup = self.view
 	
 	-- Called prior to the removal of scene's "view" (sceneGroup)

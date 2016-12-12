@@ -4,8 +4,34 @@ local json = require( "json" )
 local widget = require ("widget")
 local utils = require ("utils")
 
+local foodNameTitle = nil
+local sceneGroupReference = nil
+
+function string:split( inSplitPattern, outResults )
+ 
+   if not outResults then
+      outResults = {}
+   end
+   local theStart = 1
+   local theSplitStart, theSplitEnd = string.find( self, inSplitPattern, theStart )
+   while theSplitStart do
+      table.insert( outResults, string.sub( self, theStart, theSplitStart-1 ) )
+      theStart = theSplitEnd + 1
+      theSplitStart, theSplitEnd = string.find( self, inSplitPattern, theStart )
+   end
+   table.insert( outResults, string.sub( self, theStart ) )
+   return outResults
+end
+
+local function buttonBackHandler()
+    composer.gotoScene( "LookUpView")
+end
+
+local function buttonAddToMyFoodsHandler()
+    
+end
+
 local function onRowRender( event )
-    print('--------------------called row render')
     -- Get reference to the row group
     local row = event.row
 
@@ -29,7 +55,6 @@ local function onRowTouch ( event )
 
 end
 
-
 local displayTable = widget.newTableView{
     left = 20,
     top = 70,
@@ -41,8 +66,9 @@ local displayTable = widget.newTableView{
 }
 
 function scene:create( event )
-    print ('view 3  - create')
+    print ('FoodDataView - create')
 	local sceneGroup = self.view
+    sceneGroupReference = sceneGroup
 	
     --utils.print_r (event.params.response.report.food.nutrients)
 	-- Called when the scene's view does not exist.
@@ -57,11 +83,23 @@ function scene:create( event )
 	-- create some text
 	local title = display.newText( "Nutrient Info", display.contentCenterX, 20, native.systemFont, 24 )
 	title:setFillColor( 0 )	-- black
+    
+    local foodName = tostring(event.params.response.report.food.name)
+    foodNameTitle = display.newText( foodName, display.contentCenterX, 50, native.systemFont, 24 )
+    foodNameTitle:setFillColor( 0 )	-- black 
+    
+    local buttonLookup = widget.newButton{label="Back",x = display.contentWidth/3-30, y = title.y + 350, onRelease=buttonBackHandler}
+
+    local buttonAddToMyFoods = widget.newButton{label="Add to My Foods",x = (2 * display.contentWidth)/3, y = title.y + 350, onRelease=buttonAddToMyFoodsHandler}
+    
 	
 	-- all objects must be added to group (e.g. self.view)
 	sceneGroup:insert( background )
     sceneGroup:insert( title )
+    sceneGroup:insert( buttonLookup )
+    sceneGroup:insert( buttonAddToMyFoods )
     sceneGroup:insert( displayTable )
+    sceneGroup:insert( foodNameTitle )    
     
     itemList = event.params.response.report.food.nutrients
     
@@ -73,14 +111,16 @@ function scene:create( event )
             }
         }
     end
-
-    
+   
 end
 
 function scene:show( event )
-    print ('view 3  - show')
+    print ('FoodDataView  - show')
     
     --utils.print_r (event.params.response.report.food.nutrients)
+    itemList = event.params.response.report.food.nutrients
+    
+    utils.print_r ( event.params.response.report.food.name )
     
 	local sceneGroup = self.view
 	local phase = event.phase
@@ -90,6 +130,24 @@ function scene:show( event )
 	if phase == "will" then
 		-- Called when the scene is still off screen and is about to move on screen
 	elseif phase == "did" then
+
+        utils.print_r ( foodName )
+        foodNameTitle:removeSelf()
+        foodNameTitle = nil
+        local foodName = tostring(event.params.response.report.food.name)  
+        
+        --local titleTable = string.split(foodName,",")
+        local titleTable = foodName:split(",")
+        
+        displayTitle = titleTable[0] .. " : " .. titleTable[1]
+        
+        foodNameTitle = display.newText( displayTitle, display.contentCenterX, 50, native.systemFont, 24 )
+        
+        foodNameTitle:setFillColor( 0 )	-- black  
+        
+        sceneGroupReference:insert( foodNameTitle )
+        
+        --foodNameTitle.text("test")
 		-- Called when the scene is now on screen
 		-- 
 		-- INSERT code here to make the scene come alive
@@ -98,7 +156,7 @@ function scene:show( event )
 end
 
 function scene:hide( event )
-    print ('view 3  - hide')
+    print ('FoodDataView  - hide')
     
 	local sceneGroup = self.view
 	local phase = event.phase
@@ -111,14 +169,12 @@ function scene:hide( event )
 	elseif phase == "did" then
 		-- Called when the scene is now off screen
 
-
 	end
 end
 
 function scene:destroy( event )
-    print ('view 3  - destroy')
-	local sceneGroup = self.view
-	
+    print ('FoodDataView - destroy')
+	local sceneGroup = self.view	
 	-- Called prior to the removal of scene's "view" (sceneGroup)
 	-- 
 	-- INSERT code here to cleanup the scene
@@ -133,6 +189,5 @@ scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
 
------------------------------------------------------------------------------------------
-
+---------------------------------------------------------------------------------
 return scene
