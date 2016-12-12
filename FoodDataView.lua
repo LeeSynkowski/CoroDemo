@@ -139,9 +139,10 @@ function scene:show( event )
         --local titleTable = string.split(foodName,",")
         local titleTable = foodName:split(",")
         
-        displayTitle = titleTable[0] .. " : " .. titleTable[1]
+        displayTitle = titleTable[1] .. " : " .. titleTable[2]
+
         
-        foodNameTitle = display.newText( displayTitle, display.contentCenterX, 50, native.systemFont, 24 )
+        foodNameTitle = display.newText(displayTitle, display.contentCenterX, 50, native.systemFont, 16 )
         
         foodNameTitle:setFillColor( 0 )	-- black  
         
