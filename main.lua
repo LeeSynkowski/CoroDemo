@@ -10,6 +10,16 @@ display.setStatusBar( display.DefaultStatusBar )
 -- include Corona's "widget" library
 local widget = require "widget"
 local composer = require "composer"
+local sqlite3 = require( "sqlite3" )
+ 
+local path = system.pathForFile( "MyFoods.db", system.DocumentsDirectory )
+local db = sqlite3.open( path )
+
+--Database Setup
+local function setUpMyFoods() 
+    local tablesetup = [[CREATE TABLE IF NOT EXISTS myFoods (id INTEGER PRIMARY KEY autoincrement, name, nutrients);]]
+    db:exec( tablesetup )        
+end
 
 -- event listeners for tab buttons:
 local function onLookUpView( event )
@@ -43,3 +53,4 @@ local tabBar = widget.newTabBar{
 }
 
 onLookUpView()	-- invoke first tab button's onPress event manually
+setUpMyFoods()     

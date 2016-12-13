@@ -3,9 +3,16 @@ local scene = composer.newScene()
 local json = require( "json" )
 local widget = require ("widget")
 local utils = require ("utils")
+local sqlite3 = require( "sqlite3" )
 
 local foodNameTitle = nil
 local sceneGroupReference = nil
+local displayTitle = nil
+local foodNutrients = nil
+local itemList = nil
+
+local path = system.pathForFile( "MyFoods.db", system.DocumentsDirectory )
+local db = sqlite3.open( path )
 
 function string:split( inSplitPattern, outResults )
  
@@ -101,16 +108,7 @@ function scene:create( event )
     sceneGroup:insert( displayTable )
     sceneGroup:insert( foodNameTitle )    
     
-    itemList = event.params.response.report.food.nutrients
-    
-    utils.print_r ( itemList )
-    for k, v in pairs(itemList) do
-        displayTable:insertRow {
-            params = {
-                rowTitle = v.name..': '..v.value..' '..v.unit,
-            }
-        }
-    end
+
    
 end
 
@@ -139,6 +137,7 @@ function scene:show( event )
         --local titleTable = string.split(foodName,",")
         local titleTable = foodName:split(",")
         
+        displayTitle = nil
         displayTitle = titleTable[1] .. " : " .. titleTable[2]
 
         
@@ -153,6 +152,24 @@ function scene:show( event )
 		-- 
 		-- INSERT code here to make the scene come alive
 		-- e.g. start timers, begin animation, play audio, etc.
+        
+        displayTable:deleteAllRows()
+        
+        itemList = event.params.response.report.food.nutrients
+        
+        foodNutrients = ''
+        utils.print_r ( itemList )
+        for k, v in pairs(itemList) do
+            displayTable:insertRow {
+                params = {
+                    rowTitle = v.name..': '..v.value..' '..v.unit,
+                }
+            }
+            foodNutrients = foodNutrients .. v.name..': '..v.value..' '..v.unit .. '; '
+        end
+        
+        print("Food Nutrients")
+        print(foodNutrients)
 	end	
 end
 
