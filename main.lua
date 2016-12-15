@@ -15,6 +15,13 @@ local sqlite3 = require( "sqlite3" )
 local path = system.pathForFile( "MyFoods.db", system.DocumentsDirectory )
 local db = sqlite3.open( path )
 
+-- Handle the "applicationExit" event to close the database
+local function onSystemEvent( event )
+    if ( event.type == "applicationExit" ) then              
+        db:close()
+    end
+end
+
 --Database Setup
 local function setUpMyFoods() 
     local tablesetup = [[CREATE TABLE IF NOT EXISTS myFoods (id INTEGER PRIMARY KEY autoincrement, name, nutrients);]]

@@ -86,20 +86,22 @@ local displayTable = widget.newTableView{
 }
 
 local function handleResponse( event )
-    print( "Making web request" )
-    if not event.isError then
-        local response = json.decode( event.response )
+    local response = json.decode( event.response )
+    if ((not event.isError) and (response.list ~= nil)) then
+        
         print ("Response")
         utils.print_r (response)
         
         itemList = response.list.item
         
         for k, v in pairs(itemList) do
-            local rowText = {v.name} 
-            print(v.name)
+            local rowText = v.name
+            
+            local cleanText = rowText:gsub("'","") 
+            
             displayTable:insertRow {
                 params = {
-                    rowTitle = v.name,
+                    rowTitle = cleanText,
                     ndbno = v.ndbno
                 }
             }
@@ -115,6 +117,7 @@ local function buttonLookupHandler()
     print( "Handled button press" )
     print(" Look up text ")
     print( lookUpText )
+    displayTable:deleteAllRows()
     --food type by number
     --network.request( "http://api.nal.usda.gov/ndb/reports/?ndbno=01009&type=b&format=json&api_key=SNDRhsmOk7iBqsoE3Z00wpvO6xWuT9YOEnvw8uF1",
     --food list

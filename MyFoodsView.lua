@@ -8,12 +8,79 @@ local composer = require( "composer" )
 local json = require( "json" )
 local widget = require ("widget")
 local utils = require ("utils")
+local path = system.pathForFile( "MyFoods.db", system.DocumentsDirectory )
+local db = sqlite3.open( path )
+
+-- Handle the "applicationExit" event to close the database
+local function onSystemEvent( event )
+    if ( event.type == "applicationExit" ) then              
+        db:close()
+    end
+end
+
 
 
 local scene = composer.newScene()
 
+local function onRowRender( event )
+    -- Get reference to the row group
+    local row = event.row
+
+    -- Cache the row "contentWidth" and "contentHeight" because the row bounds can change as children objects are added
+    local rowHeight = row.contentHeight
+    local rowWidth = row.contentWidth
+
+    local message = event.row.params.rowTitle
+    
+    local rowTitle = display.newText( row, message , 0, 0, nil, 14 )
+    rowTitle:setFillColor( 0 )
+
+    -- Align the label left and vertically centered
+    rowTitle.anchorX = 0
+    rowTitle.x = 0
+    rowTitle.y = rowHeight * 0.5   
+    row:insert(rowTitle)
+end
+
+
+local function onRowTouch ( event )
+    if  (event.phase == "press") and (not event.isError ) then
+
+        local checkForItemQuery = [[SELECT * FROM myFoods WHERE name =']]..event.row.params.rowTitle..[[';]]
+     
+        local nutrients = nil
+
+        for r in db:nrows( checkForItemQuery ) do
+            nutrients = r.nutrients
+        end
+        
+        local splitNutrients = utils.split ( nutrients, "; " )     
+        
+        local options = {}
+        
+        options.params = {}
+        options.params.nutrients = splitNutrients
+        options.params.name = event.row.params.rowTitle
+
+        utils.print_r ( splitNutrients )
+        composer.gotoScene( "MyFoodsDataView" , options)
+        
+    end
+end
+
+local displayTable = widget.newTableView{
+    left = 20,
+    top = 70,
+    height = 270,
+    width = 280,
+    onRowRender = onRowRender,
+    onRowTouch = onRowTouch,
+    listener = scrollListener
+}
+
+
 function scene:create( event )
-    print ('My Foods View- create')
+    print ('My Foods View - create')
 	local sceneGroup = self.view
 
 	local background = display.newRect( display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight )
@@ -24,6 +91,7 @@ function scene:create( event )
 
 	sceneGroup:insert( background )
 	sceneGroup:insert( title )
+    sceneGroup:insert( displayTable )
 
 end
 
@@ -41,6 +109,17 @@ function scene:show( event )
 		-- 
 		-- INSERT code here to make the scene come alive
 		-- e.g. start timers, begin animation, play audio, etc.
+            --For each row in the DB, add it to the display table
+        displayTable:deleteAllRows()
+        local getAllRowsQuery = [[SELECT * FROM myFoods ORDER BY name]]
+
+        for row in db:nrows( getAllRowsQuery) do
+             displayTable:insertRow {
+                    params = {
+                        rowTitle = row.name
+                    }
+                }
+        end
 	end	
 end
 

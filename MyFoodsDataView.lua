@@ -8,7 +8,6 @@ local sqlite3 = require( "sqlite3" )
 local foodNameTitle = nil
 local sceneGroupReference = nil
 local displayTitle = nil
-local foodName = nil
 local foodNutrients = nil
 local itemList = nil
 
@@ -22,62 +21,35 @@ local function onSystemEvent( event )
     end
 end
 
-function string:split( inSplitPattern, outResults )
- 
-   if not outResults then
-      outResults = {}
-   end
-   local theStart = 1
-   local theSplitStart, theSplitEnd = string.find( self, inSplitPattern, theStart )
-   while theSplitStart do
-      table.insert( outResults, string.sub( self, theStart, theSplitStart-1 ) )
-      theStart = theSplitEnd + 1
-      theSplitStart, theSplitEnd = string.find( self, inSplitPattern, theStart )
-   end
-   table.insert( outResults, string.sub( self, theStart ) )
-   return outResults
-end
 
 local function buttonBackHandler()
-    composer.gotoScene( "LookUpView")
+    composer.gotoScene( "MyFoodsView")
 end
 
-local function buttonAddToMyFoodsHandler()
-    
-
-    --local count = 0
-    
-    --for r in db:nrows( [[SELECT Count(*) FROM myFoods]] ) do
-
-    --   count = count + 1 
-    --end
-    
-    --print ( "count"..count)
-    --if (count > 0) then
-    
+local function buttonDeleteFromMyFoodsHandler()
+    --change to a delete
     
     --check if food is in db
     local checkForItemQuery = [[SELECT * FROM myFoods WHERE name =']]..displayTitle..[[';]]
-
+  
+    local inDatabase = false
    --TODO determine if there is a better way to get the results
     for r in db:nrows( checkForItemQuery ) do
         if (r.name == displayTitle) then
-            print (r.name .. " already in database")
-            composer.gotoScene( "MyFoodsView")
-            return
+            inDatabase = true
         end
     end
     
-    --end
-    
-    local insertQuery = [[INSERT INTO myFoods VALUES (NULL, ']]..displayTitle..[[',']]..foodNutrients..[[');]]
-    local result = db:exec( insertQuery )  
-    if result == 0 then
-        print (displayTitle.." added to the database")
-    else
-        print ("Error adding "..displayTitle.." to the database")
+    if inDatabase then
+        local deleteQuery = [[DELETE FROM myFoods WHERE name=']]..displayTitle..[[';]]
+        local result = db:exec( deleteQuery )  
+        if result == 0 then
+            print (displayTitle.." removed from the database")
+        else
+            print ("Error removing "..displayTitle.." from the database")
+        end
     end
-
+    
     composer.gotoScene( "MyFoodsView")
 end
 
@@ -116,7 +88,7 @@ local displayTable = widget.newTableView{
 }
 
 function scene:create( event )
-    print ('FoodDataView - create')
+    print ('MyFoodsDataView - create')
 	local sceneGroup = self.view
     sceneGroupReference = sceneGroup
 	
@@ -134,24 +106,22 @@ function scene:create( event )
 	local title = display.newText( "Nutrient Info", display.contentCenterX, 20, native.systemFont, 24 )
 	title:setFillColor( 0 )	-- black
     
-    displayTitle = tostring(event.params.response.report.food.name)
+    displayTitle = tostring(event.params.name)
     foodNameTitle = display.newText( displayTitle, display.contentCenterX, 50, native.systemFont, 24 )
     foodNameTitle:setFillColor( 0 )	-- black 
     
     local buttonLookup = widget.newButton{label="Back",x = display.contentWidth/3-30, y = title.y + 350, onRelease=buttonBackHandler}
 
-    local buttonAddToMyFoods = widget.newButton{label="Add to My Foods",x = (2 * display.contentWidth)/3, y = title.y + 350, onRelease=buttonAddToMyFoodsHandler}
-    
+    local buttonDeleteFromMyFoods = widget.newButton{label="Delete from My Foods",x = (2 * display.contentWidth)/3, y = title.y + 350, onRelease=buttonDeleteFromMyFoodsHandler}
 	
 	-- all objects must be added to group (e.g. self.view)
 	sceneGroup:insert( background )
     sceneGroup:insert( title )
     sceneGroup:insert( buttonLookup )
-    sceneGroup:insert( buttonAddToMyFoods )
+    sceneGroup:insert( buttonDeleteFromMyFoods )
     sceneGroup:insert( displayTable )
     sceneGroup:insert( foodNameTitle )    
-    
-
+   
    
 end
 
@@ -159,30 +129,21 @@ function scene:show( event )
     print ('FoodDataView  - show')
     
     --utils.print_r (event.params.response.report.food.nutrients)
-    itemList = event.params.response.report.food.nutrients
-    
-    utils.print_r ( event.params.response.report.food.name )
-    
+    itemList = event.params.nutrients
+      
 	local sceneGroup = self.view
 	local phase = event.phase
-	print ( "phase" )
-    print ( phase )
     
 	if phase == "will" then
 		-- Called when the scene is still off screen and is about to move on screen
 	elseif phase == "did" then
 
+        utils.print_r ( foodName )
         foodNameTitle:removeSelf()
         foodNameTitle = nil
-        local foodName = tostring(event.params.response.report.food.name)  
-        local cleanText = foodName:gsub("'","") 
-        
-        --local titleTable = string.split(foodName,",")
-        local titleTable = cleanText:split(",")
-        
         displayTitle = nil
-        displayTitle = titleTable[1] .. " : " .. titleTable[2]
-
+        
+        displayTitle = event.params.name
         
         foodNameTitle = display.newText(displayTitle, display.contentCenterX, 50, native.systemFont, 16 )
         
@@ -198,21 +159,15 @@ function scene:show( event )
         
         displayTable:deleteAllRows()
         
-        itemList = event.params.response.report.food.nutrients
-        
-        foodNutrients = ''
-        utils.print_r ( itemList )
+        --del itemList = event.params.response.report.food.nutrients
+
         for k, v in pairs(itemList) do
             displayTable:insertRow {
                 params = {
-                    rowTitle = v.name..': '..v.value..' '..v.unit,
+                    rowTitle = v
                 }
             }
-            foodNutrients = foodNutrients .. v.name..': '..v.value..' '..v.unit .. '; '
         end
-        
-        print("Food Nutrients")
-        print(foodNutrients)
 	end	
 end
 

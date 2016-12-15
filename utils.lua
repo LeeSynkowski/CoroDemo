@@ -34,4 +34,20 @@ utils.print_r = function ( t )
     print()
 end
 
+utils.split = function( inString, inSplitPattern, outResults )
+ 
+   if not outResults then
+      outResults = {}
+   end
+   local theStart = 1
+   local theSplitStart, theSplitEnd = string.find( inString, inSplitPattern, theStart )
+   while theSplitStart do
+      table.insert( outResults, string.sub( inString, theStart, theSplitStart-1 ) )
+      theStart = theSplitEnd + 1
+      theSplitStart, theSplitEnd = string.find( inString, inSplitPattern, theStart )
+   end
+   table.insert( outResults, string.sub( inString, theStart ) )
+   return outResults
+end
+
 return utils
